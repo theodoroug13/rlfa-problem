@@ -11,7 +11,12 @@ import random
 from itertools import chain, combinations
 from statistics import mean
 
-import numpy as np
+##import numpy as np
+try:
+    import numpy as np
+except ImportError:
+    print("Warning: Numpy not found. Some functions might not work.")
+    np = None
 
 
 # ______________________________________________________________________________
