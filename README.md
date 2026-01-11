@@ -1,72 +1,48 @@
-# RLFA Problem (Radio Link Frequency Assignment) — CSP Solver in Python
+# RLFA / RLFAP — CSP Solver (Python)
 
-A Python implementation for solving the **Radio Link Frequency Assignment Problem (RLFAP)** as a **Constraint Satisfaction Problem (CSP)**.
+This repository solves the **Radio Link Frequency Assignment Problem (RLFAP)** by modeling it as a **Constraint Satisfaction Problem (CSP)**.
 
-In short: we assign a frequency to each radio link from an allowed set of frequencies, while satisfying interference constraints between “nearby” links.
-
----
-
-## Problem summary
-
-Each radio link is modeled as a variable with its own domain (allowed frequencies). The main constraints are typically of the form:
-
-|F1 - F2| > k12
-
-Meaning two links must be separated by at least `k12` in frequency to avoid interference.
-
-RLFAP is **NP-hard** and is commonly used as a benchmark for CSP techniques.
+Each radio link is a variable with an allowed set of frequencies (domain). Constraints between pairs of links enforce minimum separation, using operators like `<`, `>`, `=` depending on the instance specification.
 
 ---
 
-## Repository contents
+## What’s implemented
 
-- `rlfa.py` — main entry point / runner (loads an instance, runs a solver, prints results)
-- `csp.py` — CSP primitives + solving utilities (constraints, consistency checks, search helpers)
-- `search.py` — generic search routines used by the CSP solver
-- `utils.py` — helper utilities
-- `rlfap/` — problem instances / datasets (inputs for the solver)
+### Parsing & modeling
+- **`parse_files(...)`**: parses the three RLFA instance files (variables, domains, constraints).
+- **`RLFA` class**: extends a generic CSP and builds a `constraints_map` keyed by `(Xi, Xj)` for fast constraint lookup.
+
+### Solvers compared (run from `rlfa.py`)
+- **FC + MRV**: Forward Checking with **Minimum Remaining Values** variable ordering.
+- **MAC + dom/wdeg**: Maintain Arc Consistency with a **dom/wdeg** variable heuristic.
+  - Includes a modified **revise/AC-3** pipeline that can update constraint weights on domain wipe-out.
+- **FC-CBJ + dom/wdeg**: Forward Checking with **Conflict-Directed Backjumping**, implemented from scratch.
+
+### Metrics & timeout
+- Prints a results table including:
+  - runtime,
+  - number of assignments (visited nodes),
+  - number of constraint checks,
+  - solved/unsolved,
+  - and **TIMEOUT** if execution exceeds the time limit (1 minute).
+
+---
+
+## Repository structure (high level)
+
+- `rlfa.py` — main runner: loads an instance, runs solvers, prints metrics
+- `csp.py`, `search.py`, `utils.py` — CSP/search utilities (AIMA-based)
 - `sortedcontainers/` — vendored dependency used by the implementation
+- `rlfap/` — RLFA benchmark instances (variables/domains/constraints files)
 
 ---
 
-## Getting started
+## How to run
 
-### Requirements
-- Python 3.x
+1. Choose the instance files inside `rlfa.py` (currently selected in `main`).
+2. Run:
 
-### Run
-From the repository root:
-
-    python rlfa.py
-
-If the script supports CLI flags/arguments:
-
-    python rlfa.py --help
-
----
-
-## Input format (instances)
-
-Instances usually provide:
-- **Variables**: radio links
-- **Domains**: allowed frequencies per link
-- **Constraints**: pairs of links with separation requirements
-
-This repo includes an `rlfap/` directory intended for storing/reading these instances.
-
----
-
-## Ideas for extensions
-
-If you want to make this even more “portfolio-ready”:
-
-- Add a `requirements.txt` (even if you vendor dependencies)
-- Add an `examples/` section with 1–2 commands that reproduce a run + sample output
-- Add a short “Methods” section describing what heuristics/consistency methods you used and what they improve
-
----
-
-## Author
-
-**Giorgos Theodorou**  
-GitHub: https://github.com/theodoroug13
+```bash
+python rlfa.py
+# or (linux)
+python3 rlfa.py
